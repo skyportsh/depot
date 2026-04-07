@@ -14,7 +14,7 @@ on:
       - oses/**
 jobs:
   push:
-    name: "yolks:${{ matrix.oses }}"
+    name: "images:${{ matrix.oses }}"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -42,4 +42,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/skyportsh/yolks:${{ matrix.oses }}
+            ghcr.io/skyportsh/images:${{ matrix.oses }}

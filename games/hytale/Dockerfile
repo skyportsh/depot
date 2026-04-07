@@ -20,7 +20,7 @@
 # SOFTWARE.
 #
 
-FROM 		--platform=$TARGETOS/$TARGETARCH ghcr.io/skyportsh/yolks:java_25
+FROM 		--platform=$TARGETOS/$TARGETARCH ghcr.io/skyportsh/images:java_25
 
 LABEL       author="Skyport" maintainer="container@skyport"
 
@@ -30,7 +30,7 @@ LABEL       org.opencontainers.image.licenses=MIT
 
 USER		root
 
-COPY        --from=ghcr.io/skyportsh/yolks:java_25 entrypoint.sh /java.sh
+COPY        --from=ghcr.io/skyportsh/images:java_25 entrypoint.sh /java.sh
 RUN 		chmod +x /java.sh
 
 RUN			apt-get update -y \
