@@ -1,4 +1,8 @@
 name: build oses
+permissions:
+  contents: read
+  packages: write
+
 on:
   workflow_dispatch:
   schedule:
@@ -38,4 +42,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/pterodactyl/yolks:${{ matrix.oses }}
+            ghcr.io/skyportsh/yolks:${{ matrix.oses }}

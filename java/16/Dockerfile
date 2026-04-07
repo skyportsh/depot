@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Matthew Penner
+# Copyright (c) 2024-2026 Matt James, the Matt James Foundation (MJF) and contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,10 @@
 FROM        --platform=$TARGETOS/$TARGETARCH eclipse-temurin:16-jdk-focal
 
 
-LABEL       author="Matthew Penner" maintainer="matthew@pterodactyl.io"
+LABEL       author="Skyport" maintainer="container@skyport"
 
-LABEL       org.opencontainers.image.source="https://github.com/pterodactyl/yolks"
+LABEL       org.opencontainers.image.authors="container@skyport"
+LABEL       org.opencontainers.image.source="https://github.com/skyportsh/depot"
 LABEL       org.opencontainers.image.licenses=MIT
 
 RUN 		apt-get update -y \

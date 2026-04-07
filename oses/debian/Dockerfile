@@ -1,8 +1,9 @@
 FROM        --platform=$TARGETOS/$TARGETARCH debian:buster-slim
 
-LABEL       author="Michael Parker" maintainer="parker@pterodactyl.io"
+LABEL       author="Skyport" maintainer="container@skyport"
 
-LABEL       org.opencontainers.image.source="https://github.com/pterodactyl/yolks"
+LABEL       org.opencontainers.image.authors="container@skyport"
+LABEL       org.opencontainers.image.source="https://github.com/skyportsh/depot"
 LABEL       org.opencontainers.image.licenses=MIT
 
 RUN         apt update && apt upgrade -y \

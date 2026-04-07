@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2026 Pterodactyl
+# Copyright (c) 2024-2026 Matt James, the Matt James Foundation (MJF) and contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,17 @@
 # SOFTWARE.
 #
 
-FROM 		--platform=$TARGETOS/$TARGETARCH ghcr.io/pterodactyl/yolks:java_25
+FROM 		--platform=$TARGETOS/$TARGETARCH ghcr.io/skyportsh/yolks:java_25
 
-LABEL       author="William V." maintainer="william.venner@infraly.co"
+LABEL       author="Skyport" maintainer="container@skyport"
 
-LABEL       org.opencontainers.image.source="https://github.com/pterodactyl/yolks"
+LABEL       org.opencontainers.image.authors="container@skyport"
+LABEL       org.opencontainers.image.source="https://github.com/skyportsh/depot"
 LABEL       org.opencontainers.image.licenses=MIT
 
 USER		root
 
-COPY        --from=ghcr.io/pterodactyl/yolks:java_25 entrypoint.sh /java.sh
+COPY        --from=ghcr.io/skyportsh/yolks:java_25 entrypoint.sh /java.sh
 RUN 		chmod +x /java.sh
 
 RUN			apt-get update -y \

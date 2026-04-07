@@ -1,4 +1,8 @@
 name: build python
+permissions:
+  contents: read
+  packages: write
+
 on:
   workflow_dispatch:
   schedule:
@@ -42,4 +46,4 @@ jobs:
           platforms: linux/amd64, linux/arm64
           push: true
           tags: |
-            ghcr.io/pterodactyl/yolks:python_${{ matrix.tag }}
+            ghcr.io/skyportsh/yolks:python_${{ matrix.tag }}

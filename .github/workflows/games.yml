@@ -1,4 +1,8 @@
 name: build games
+permissions:
+  contents: read
+  packages: write
+
 on:
   workflow_dispatch:
   schedule:
@@ -36,4 +40,4 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/pterodactyl/games:${{ matrix.game }}
+            ghcr.io/skyportsh/games:${{ matrix.game }}

@@ -1,4 +1,8 @@
 name: build installers
+permissions:
+  contents: read
+  packages: write
+
 on:
   workflow_dispatch:
   schedule:
@@ -42,7 +46,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/pterodactyl/installers:${{ matrix.tag }}
+            ghcr.io/skyportsh/installers:${{ matrix.tag }}
 
   pushAmd:
     name: "yolks:installers_amd:${{ matrix.tag }}"
@@ -70,4 +74,4 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/pterodactyl/installers:${{ matrix.tag }}
+            ghcr.io/skyportsh/installers:${{ matrix.tag }}
