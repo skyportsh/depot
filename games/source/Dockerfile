@@ -20,7 +20,7 @@
 # SOFTWARE.
 #
 
-FROM        --platform=$TARGETOS/$TARGETARCH debian:stable-slim
+FROM        --platform=$TARGETOS/$TARGETARCH debian:trixie-slim
 
 LABEL       author="Skyport" maintainer="container@skyport"
 
@@ -31,10 +31,15 @@ LABEL       org.opencontainers.image.licenses=MIT
 ENV         DEBIAN_FRONTEND=noninteractive
 
 RUN         dpkg --add-architecture i386 \
-				&& apt update \
-				&& apt upgrade -y \
-				&& apt install -y tar curl gcc g++ lib32gcc-s1 libgcc1 libcurl4-gnutls-dev:i386 libssl3:i386 libcurl4:i386 lib32tinfo6 libtinfo6:i386 lib32z1 lib32stdc++6 libncurses5:i386 libcurl3-gnutls:i386 libsdl2-2.0-0:i386 iproute2 gdb libsdl1.2debian libfontconfig1 telnet net-tools netcat-traditional tzdata \
-				&& useradd -m -d /home/container container
+                && apt-get update \
+                && apt-get upgrade -y \
+                && apt-get install -y --no-install-recommends \
+                    tar curl ca-certificates gcc g++ lib32gcc-s1 libgcc-s1 libcurl4-gnutls-dev:i386 libssl3t64:i386 \
+                    libcurl4t64:i386 lib32tinfo6 libtinfo6:i386 lib32z1 lib32stdc++6 libncurses6:i386 \
+                    libcurl3t64-gnutls:i386 libsdl2-2.0-0:i386 iproute2 gdb libsdl1.2debian libfontconfig1 telnet \
+                    net-tools netcat-traditional tzdata \
+                && rm -rf /var/lib/apt/lists/* \
+                && useradd -m -d /home/container container
 
 USER        container
 ENV         USER=container HOME=/home/container

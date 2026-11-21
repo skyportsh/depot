@@ -20,7 +20,13 @@
 # SOFTWARE.
 #
 
-FROM 		--platform=$TARGETOS/$TARGETARCH debian:bullseye-slim
+# Stage 1: RCON wrapper dependencies (official node binary + ws module)
+FROM        --platform=$TARGETOS/$TARGETARCH node:24-trixie-slim AS wrapper
+
+RUN         npm install --prefix /wrapper --omit=dev --no-audit --no-fund ws
+
+# Stage 2: final image
+FROM        --platform=$TARGETOS/$TARGETARCH debian:trixie-slim
 
 LABEL       author="Skyport" maintainer="container@skyport"
 
@@ -30,22 +36,22 @@ LABEL       org.opencontainers.image.licenses=MIT
 
 ENV         DEBIAN_FRONTEND=noninteractive
 
-RUN			dpkg --add-architecture i386 \
-			&& apt update \
-			&& apt upgrade -y \
-			&& apt install -y lib32gcc-s1 lib32stdc++6 unzip curl iproute2 tzdata libgdiplus libsdl2-2.0-0:i386 \
-			&& curl -sL https://deb.nodesource.com/setup_14.x | bash - \
-			&& apt install -y nodejs \
-			&& mkdir /node_modules \
-			&& npm install --prefix / ws \
-			&& useradd -d /home/container -m container
+RUN         dpkg --add-architecture i386 \
+                && apt-get update \
+                && apt-get upgrade -y \
+                && apt-get install -y --no-install-recommends \
+                    lib32gcc-s1 lib32stdc++6 libstdc++6 unzip curl ca-certificates iproute2 tzdata libgdiplus \
+                    libsdl2-2.0-0:i386 \
+                && rm -rf /var/lib/apt/lists/* \
+                && useradd -d /home/container -m container
 
-USER 		container
-ENV  		USER=container HOME=/home/container
+COPY        --from=wrapper /usr/local/bin/node /usr/local/bin/node
+COPY        --from=wrapper /wrapper/node_modules /node_modules
 
-WORKDIR 	/home/container
+USER        container
+ENV         USER=container HOME=/home/container
+WORKDIR     /home/container
 
-COPY 		./entrypoint.sh /entrypoint.sh
-COPY 		./wrapper.js /wrapper.js
-
-CMD			[ "/bin/bash", "/entrypoint.sh" ]
+COPY        ./entrypoint.sh /entrypoint.sh
+COPY        ./wrapper.js /wrapper.js
+CMD         [ "/bin/bash", "/entrypoint.sh" ]

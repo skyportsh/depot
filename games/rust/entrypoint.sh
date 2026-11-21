@@ -2,7 +2,7 @@
 cd /home/container
 
 # Make internal Docker IP address available to processes.
-export INTERNAL_IP=`ip route get 1 | awk '{print $(NF-2);exit}'`
+export INTERNAL_IP=`ip route get 1 | awk '{for (i = 1; i < NF; i++) if ($i == "src") { print $(i + 1); exit }}'`
 
 
 ## if auto_update is not set or to 1 update

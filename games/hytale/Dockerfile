@@ -20,7 +20,8 @@
 # SOFTWARE.
 #
 
-FROM 		--platform=$TARGETOS/$TARGETARCH ghcr.io/skyportsh/images:java_25
+ARG         JAVA_IMAGE=ghcr.io/skyportsh/images:java_25
+FROM        --platform=$TARGETOS/$TARGETARCH ${JAVA_IMAGE}
 
 LABEL       author="Skyport" maintainer="container@skyport"
 
@@ -28,19 +29,19 @@ LABEL       org.opencontainers.image.authors="container@skyport"
 LABEL       org.opencontainers.image.source="https://github.com/skyportsh/depot"
 LABEL       org.opencontainers.image.licenses=MIT
 
-USER		root
+USER        root
 
-COPY        --from=ghcr.io/skyportsh/images:java_25 entrypoint.sh /java.sh
-RUN 		chmod +x /java.sh
+# Keep the base image Java entrypoint as /java.sh
+RUN         cp /entrypoint.sh /java.sh \
+                && chmod +x /java.sh
 
-RUN			apt-get update -y \
-				&& apt-get install -y unzip jq \
-				&& rm -rf /var/lib/apt/lists/*
+RUN         apt-get update -y \
+                && apt-get install -y --no-install-recommends unzip jq \
+                && rm -rf /var/lib/apt/lists/*
 
 USER        container
 ENV         USER=container HOME=/home/container
 WORKDIR     /home/container
 
-COPY 		./entrypoint.sh /entrypoint.sh
-
+COPY        ./entrypoint.sh /entrypoint.sh
 CMD         [ "/bin/bash", "/entrypoint.sh" ]

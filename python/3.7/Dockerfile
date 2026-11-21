@@ -28,7 +28,7 @@ LABEL       org.opencontainers.image.authors="container@skyport"
 LABEL       org.opencontainers.image.source="https://github.com/skyportsh/depot"
 LABEL       org.opencontainers.image.licenses=MIT
 
-RUN         apk add --update --no-cache cmake make ca-certificates curl ffmpeg g++ gcc git openssl sqlite tar tzdata \
+RUN         apk upgrade --no-cache && apk add --no-cache cmake make ca-certificates curl ffmpeg g++ gcc git openssl sqlite tar tzdata \
 				&& adduser -D -h /home/container container
 
 USER        container

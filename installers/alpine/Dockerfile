@@ -20,7 +20,7 @@
 # SOFTWARE.
 #
 
-FROM        --platform=$TARGETOS/$TARGETARCH alpine:latest
+FROM        --platform=$TARGETOS/$TARGETARCH alpine:3
 
 LABEL       author="Skyport" maintainer="container@skyport"
 
@@ -28,4 +28,4 @@ LABEL       org.opencontainers.image.authors="container@skyport"
 LABEL       org.opencontainers.image.source="https://github.com/skyportsh/depot"
 LABEL       org.opencontainers.image.licenses=MIT
 
-RUN         apk add --update --no-cache ca-certificates curl git jq wget
+RUN         apk upgrade --no-cache && apk add --no-cache ca-certificates curl git jq wget

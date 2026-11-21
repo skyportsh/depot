@@ -1,0 +1,90 @@
+# Manifest of the depot images: single source of truth for CI and local tests.
+#
+# Columns (separated by "|", blank lines and # lines are ignored):
+#   id | build context | Dockerfile | published image | platforms | test profile | expected | build args | depends on | max size (MB)
+#
+#   - platforms: comma-separated list (linux/amd64,linux/arm64)
+#   - test profile: file tests/profiles/<profile>.sh
+#   - expected: value passed to the profile (major version, python version, ...)
+#   - build args: comma-separated KEY=VALUE; {id} is replaced by the base image of that id
+#   - depends on: id of another manifest image that is built and tested first
+#   - max size: size budget in MB (uncompressed); the test run fails when an image grows past it
+#
+# An image is only published if ALL its tests pass (see tests/run.sh --publish).
+
+# --- Base systems --------------------------------------------------------
+os-alpine|oses/alpine|oses/alpine/Dockerfile|ghcr.io/skyportsh/images:alpine|linux/amd64,linux/arm64|os-alpine||||30
+os-debian|oses/debian|oses/debian/Dockerfile|ghcr.io/skyportsh/images:debian|linux/amd64,linux/arm64|os-debian||||480
+os-debian-dev|oses/debian|oses/debian/Dockerfile.dev|ghcr.io/skyportsh/images:debian-dev|linux/amd64,linux/arm64|os-debian-dev||||1670
+
+# --- Installers -------------------------------------------------------------
+installer-alpine|installers|installers/alpine/Dockerfile|ghcr.io/skyportsh/installers:alpine|linux/amd64,linux/arm64|installer-alpine||||60
+installer-debian|installers|installers/debian/Dockerfile|ghcr.io/skyportsh/installers:debian|linux/amd64|installer-debian||||200
+
+# --- Go ----------------------------------------------------------------------
+go-1.14|go|go/1.14/Dockerfile|ghcr.io/skyportsh/images:go_1.14|linux/amd64,linux/arm64|go|1.14|||500
+go-1.15|go|go/1.15/Dockerfile|ghcr.io/skyportsh/images:go_1.15|linux/amd64,linux/arm64|go|1.15|||520
+go-1.16|go|go/1.16/Dockerfile|ghcr.io/skyportsh/images:go_1.16|linux/amd64,linux/arm64|go|1.16|||520
+go-1.17|go|go/1.17/Dockerfile|ghcr.io/skyportsh/images:go_1.17|linux/amd64,linux/arm64|go|1.17|||540
+go-1.18|go|go/1.18/Dockerfile|ghcr.io/skyportsh/images:go_1.18|linux/amd64,linux/arm64|go|1.18|||580
+go-1.19|go|go/1.19/Dockerfile|ghcr.io/skyportsh/images:go_1.19|linux/amd64,linux/arm64|go|1.19|||610
+go-1.20|go|go/1.20/Dockerfile|ghcr.io/skyportsh/images:go_1.20|linux/amd64,linux/arm64|go|1.20|||470
+go-1.21|go|go/1.21/Dockerfile|ghcr.io/skyportsh/images:go_1.21|linux/amd64,linux/arm64|go|1.21|||410
+go-1.22|go|go/1.22/Dockerfile|ghcr.io/skyportsh/images:go_1.22|linux/amd64,linux/arm64|go|1.22|||420
+go-1.23|go|go/1.23/Dockerfile|ghcr.io/skyportsh/images:go_1.23|linux/amd64,linux/arm64|go|1.23|||440
+go-1.24|go|go/1.24/Dockerfile|ghcr.io/skyportsh/images:go_1.24|linux/amd64,linux/arm64|go|1.24|||470
+go-1.25|go|go/1.25/Dockerfile|ghcr.io/skyportsh/images:go_1.25|linux/amd64,linux/arm64|go|1.25|||390
+go-1.26|go|go/1.26/Dockerfile|ghcr.io/skyportsh/images:go_1.26|linux/amd64,linux/arm64|go|1.26|||430
+
+# --- Java (Temurin) ----------------------------------------------------------
+java-8|java|java/8/Dockerfile|ghcr.io/skyportsh/images:java_8|linux/amd64,linux/arm64|java|8|||720
+java-11|java|java/11/Dockerfile|ghcr.io/skyportsh/images:java_11|linux/amd64,linux/arm64|java|11|||1000
+java-16|java|java/16/Dockerfile|ghcr.io/skyportsh/images:java_16|linux/amd64,linux/arm64|java|16|||1180
+java-17|java|java/17/Dockerfile|ghcr.io/skyportsh/images:java_17|linux/amd64,linux/arm64|java|17|||1030
+java-18|java|java/18/Dockerfile|ghcr.io/skyportsh/images:java_18|linux/amd64,linux/arm64|java|18|||1120
+java-19|java|java/19/Dockerfile|ghcr.io/skyportsh/images:java_19|linux/amd64,linux/arm64|java|19|||1140
+java-21|java|java/21/Dockerfile|ghcr.io/skyportsh/images:java_21|linux/amd64,linux/arm64|java|21|||1080
+java-25|java|java/25/Dockerfile|ghcr.io/skyportsh/images:java_25|linux/amd64,linux/arm64|java|25|||910
+
+# --- Java (Temurin, JRE only: smaller, no javac) ---------------------------------
+java-8-jre|java|java/8-jre/Dockerfile|ghcr.io/skyportsh/images:java_8_jre|linux/amd64,linux/arm64|java|8:jre|||660
+java-11-jre|java|java/11-jre/Dockerfile|ghcr.io/skyportsh/images:java_11_jre|linux/amd64,linux/arm64|java|11:jre|||720
+java-17-jre|java|java/17-jre/Dockerfile|ghcr.io/skyportsh/images:java_17_jre|linux/amd64,linux/arm64|java|17:jre|||730
+java-21-jre|java|java/21-jre/Dockerfile|ghcr.io/skyportsh/images:java_21_jre|linux/amd64,linux/arm64|java|21:jre|||760
+java-25-jre|java|java/25-jre/Dockerfile|ghcr.io/skyportsh/images:java_25_jre|linux/amd64,linux/arm64|java|25:jre|||780
+
+# --- Java (OpenJ9 / Semeru) --------------------------------------------------
+# Semeru 16 is not published for arm64, so java-16j9 is amd64 only.
+java-8j9|java|java/8j9/Dockerfile|ghcr.io/skyportsh/images:java_8j9|linux/amd64,linux/arm64|java|8:openj9|||940
+java-11j9|java|java/11j9/Dockerfile|ghcr.io/skyportsh/images:java_11j9|linux/amd64,linux/arm64|java|11:openj9|||1210
+java-16j9|java|java/16j9/Dockerfile|ghcr.io/skyportsh/images:java_16j9|linux/amd64|java|16:openj9|||370
+java-17j9|java|java/17j9/Dockerfile|ghcr.io/skyportsh/images:java_17j9|linux/amd64,linux/arm64|java|17:openj9|||1220
+java-18j9|java|java/18j9/Dockerfile|ghcr.io/skyportsh/images:java_18j9|linux/amd64,linux/arm64|java|18:openj9|||1170
+java-19j9|java|java/19j9/Dockerfile|ghcr.io/skyportsh/images:java_19j9|linux/amd64,linux/arm64|java|19:openj9|||1140
+
+# --- Node.js -----------------------------------------------------------------
+nodejs-12|nodejs|nodejs/12/Dockerfile|ghcr.io/skyportsh/images:nodejs_12|linux/amd64,linux/arm64|nodejs|12|||300
+nodejs-14|nodejs|nodejs/14/Dockerfile|ghcr.io/skyportsh/images:nodejs_14|linux/amd64,linux/arm64|nodejs|14|||370
+nodejs-15|nodejs|nodejs/15/Dockerfile|ghcr.io/skyportsh/images:nodejs_15|linux/amd64,linux/arm64|nodejs|15|||310
+nodejs-16|nodejs|nodejs/16/Dockerfile|ghcr.io/skyportsh/images:nodejs_16|linux/amd64,linux/arm64|nodejs|16|||400
+nodejs-17|nodejs|nodejs/17/Dockerfile|ghcr.io/skyportsh/images:nodejs_17|linux/amd64,linux/arm64|nodejs|17|||410
+nodejs-18|nodejs|nodejs/18/Dockerfile|ghcr.io/skyportsh/images:nodejs_18|linux/amd64,linux/arm64|nodejs|18|||430
+nodejs-20|nodejs|nodejs/20/Dockerfile|ghcr.io/skyportsh/images:nodejs_20|linux/amd64,linux/arm64|nodejs|20|||450
+nodejs-22|nodejs|nodejs/22/Dockerfile|ghcr.io/skyportsh/images:nodejs_22|linux/amd64,linux/arm64|nodejs|22|||500
+nodejs-24|nodejs|nodejs/24/Dockerfile|ghcr.io/skyportsh/images:nodejs_24|linux/amd64,linux/arm64|nodejs|24|||500
+
+# --- Python ------------------------------------------------------------------
+python-3.7|python|python/3.7/Dockerfile|ghcr.io/skyportsh/images:python_3.7|linux/amd64,linux/arm64|python|3.7|||740
+python-3.8|python|python/3.8/Dockerfile|ghcr.io/skyportsh/images:python_3.8|linux/amd64,linux/arm64|python|3.8|||730
+python-3.9|python|python/3.9/Dockerfile|ghcr.io/skyportsh/images:python_3.9|linux/amd64,linux/arm64|python|3.9|||770
+python-3.10|python|python/3.10/Dockerfile|ghcr.io/skyportsh/images:python_3.10|linux/amd64,linux/arm64|python|3.10|||820
+python-3.11|python|python/3.11/Dockerfile|ghcr.io/skyportsh/images:python_3.11|linux/amd64,linux/arm64|python|3.11|||810
+python-3.12|python|python/3.12/Dockerfile|ghcr.io/skyportsh/images:python_3.12|linux/amd64,linux/arm64|python|3.12|||800
+python-3.13|python|python/3.13/Dockerfile|ghcr.io/skyportsh/images:python_3.13|linux/amd64,linux/arm64|python|3.13|||790
+python-3.14|python|python/3.14/Dockerfile|ghcr.io/skyportsh/images:python_3.14|linux/amd64,linux/arm64|python|3.14|||790
+
+# --- Games --------------------------------------------------------------------
+game-rust|games/rust|games/rust/Dockerfile|ghcr.io/skyportsh/games:rust|linux/amd64|game-rust||||230
+game-source|games/source|games/source/Dockerfile|ghcr.io/skyportsh/games:source|linux/amd64|game-source||||410
+# Hytale is built on top of java-25 (JAVA_IMAGE), which is built and tested right before it.
+game-hytale|games/hytale|games/hytale/Dockerfile|ghcr.io/skyportsh/games:hytale|linux/amd64|game-hytale||JAVA_IMAGE={java-25}|java-25|920

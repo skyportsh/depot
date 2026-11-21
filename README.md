@@ -23,15 +23,38 @@ are easy to track and port. Skyport-specific branding, metadata, logging prompts
 
 Unless otherwise noted, images are built for both `linux/amd64` and `linux/arm64`.
 
-## Publishing
+## Tests and publishing
 
-GitHub Actions builds and publishes images to GHCR on:
+Every image is described in [`images.txt`](images.txt) and **must pass its test profile before it is published**.
+The profiles live in [`tests/profiles`](tests/profiles) and check, among other things: the non-root `container` user,
+the entrypoint contract (`STARTUP` placeholders, `TZ`, `INTERNAL_IP`, exit codes, no shell injection through variable
+values), the runtime version (Java/Node/Go/Python), toolchains, CA certificates, and for games the update and RCON flows.
 
-- manual workflow dispatch
-- scheduled rebuilds
-- pushes to `master` that touch the relevant image directories
+The optional end-to-end tests (`DEPOT_TEST_E2E=1`, always on in CI) install and start real software the way the panel does:
+the catalog's Minecraft install script runs in `installers:debian`, then a real Minecraft server boots on every Java image;
+steamcmd is installed and logs in to Steam on the Rust and Source images; Node, Python and Go images install a real
+package/module from their registry.
 
-The workflows are configured for the `skyportsh` namespace and use the repository `GITHUB_TOKEN` to push packages.
+Run them locally (Docker required):
+
+```bash
+tests/run.sh                    # build + test everything on the host platform
+tests/run.sh java-21 nodejs-20  # only these images (dependencies included)
+tests/run.sh --all-platforms    # test every declared platform (QEMU when needed)
+tests/run.sh --jobs 4           # test up to 4 independent images in parallel
+DEPOT_TEST_E2E=1 tests/run.sh   # also run the end-to-end tests (needs internet)
+tests/run.sh --list             # list image ids
+```
+
+GitHub Actions (`.github/workflows/images.yml`) runs the same script on every pull request (build + test, no push)
+and, on `master`, on a monthly schedule or on manual dispatch (build + test + push). Images are pushed to GHCR only
+when all their tests pass, with a floating tag (`java_21`) and an immutable dated tag (`java_21-20261121`).
+Every image also has a size budget in `images.txt`; a test run fails when an image grows past it.
+Only images touched by a change are rebuilt on push and pull requests; the monthly run rebuilds everything to pick up
+base image security updates.
+
+End-of-life runtimes (Node 12-17, Go 1.14-1.17, ...) are kept for compatibility and rebuilt on the latest available
+upstream tag, but they no longer receive upstream security fixes.
 
 ## Available images
 
@@ -40,7 +63,8 @@ The workflows are configured for the `skyportsh` namespace and use the repositor
 - [`oses/alpine`](https://github.com/skyportsh/depot/tree/master/oses/alpine)
   - `ghcr.io/skyportsh/images:alpine`
 - [`oses/debian`](https://github.com/skyportsh/depot/tree/master/oses/debian)
-  - `ghcr.io/skyportsh/images:debian`
+  - `ghcr.io/skyportsh/images:debian` — lean runtime image (shared libraries and basic tooling)
+  - `ghcr.io/skyportsh/images:debian-dev` — the same plus compilers, debuggers, `-dev` headers and ffmpeg
 
 ### Game images
 
@@ -92,6 +116,19 @@ The workflows are configured for the `skyportsh` namespace and use the repositor
   - `ghcr.io/skyportsh/images:java_21`
 - [`java/25`](https://github.com/skyportsh/depot/tree/master/java/25)
   - `ghcr.io/skyportsh/images:java_25`
+
+JRE-only variants (no `javac`, noticeably smaller) of the LTS versions:
+
+- [`java/8-jre`](https://github.com/skyportsh/depot/tree/master/java/8-jre)
+  - `ghcr.io/skyportsh/images:java_8_jre`
+- [`java/11-jre`](https://github.com/skyportsh/depot/tree/master/java/11-jre)
+  - `ghcr.io/skyportsh/images:java_11_jre`
+- [`java/17-jre`](https://github.com/skyportsh/depot/tree/master/java/17-jre)
+  - `ghcr.io/skyportsh/images:java_17_jre`
+- [`java/21-jre`](https://github.com/skyportsh/depot/tree/master/java/21-jre)
+  - `ghcr.io/skyportsh/images:java_21_jre`
+- [`java/25-jre`](https://github.com/skyportsh/depot/tree/master/java/25-jre)
+  - `ghcr.io/skyportsh/images:java_25_jre`
 
 ### Node.js images
 
