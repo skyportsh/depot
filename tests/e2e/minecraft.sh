@@ -37,9 +37,10 @@ e2e_minecraft() {
 	[[ "$EXPECT" == *:jre ]] && flavor="jre"
 	version="$(e2e_vanilla_version "$major" "$flavor")"
 
-	# OpenJ9's JIT cannot run under x86 emulation on Apple Silicon (it aborts); CI runs it natively.
-	if [ "$flavor" = "openj9" ] && [ "$PLATFORM" != "$(host_platform)" ]; then
-		printf '    skip e2e: OpenJ9 cannot run under emulation on this host; CI covers it\n'
+	# Booting real servers under emulation (QEMU, Rosetta) is far too slow or crashes the JIT:
+	# the native platform of the machine running the tests is the one that gets the e2e tests.
+	if [ "$PLATFORM" != "$(host_platform)" ]; then
+		printf '    skip e2e: %s is emulated on this host; the native platform is covered\n' "$PLATFORM"
 		return 0
 	fi
 

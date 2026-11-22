@@ -184,23 +184,52 @@ cache_args() { # id platform [write]
 	return 0
 }
 
+# Name of a buildx builder that uses the "docker" driver (it can see images of the local daemon).
+docker_driver_builder() {
+	docker buildx ls 2>/dev/null | awk '$1 !~ /^\\_/ && $2 == "docker" { n = $1; gsub(/\*/, "", n); print n; exit }'
+}
+
+# Run a build command, retrying when QEMU crashes (it segfaults now and then on emulated platforms).
+with_qemu_retry() { # command...
+	local attempt out rc
+	for attempt in 1 2 3; do
+		out="$("$@" 2>&1)"
+		rc=$?
+		if [ "$rc" -eq 0 ]; then
+			printf '%s\n' "$out"
+			return 0
+		fi
+		if ! printf '%s' "$out" | grep -q 'qemu: uncaught target signal'; then
+			break
+		fi
+		printf '  (qemu crashed, retrying %d/3)\n' "$attempt" >&2
+	done
+	printf '%s\n' "$out"
+	return "$rc"
+}
+
 build_local() { # id platform
-	local id="$1" platform="$2" tag dep line
+	local id="$1" platform="$2" tag dep line builder=""
 	local args=() pull=(--pull)
 	tag="$(local_tag "$id" "$platform")"
 
-	# A dependency is a local image: it must exist for this platform and must not be pulled.
+	# A dependency is a local image: it must exist for this platform, must not be pulled, and the
+	# build must use a builder that can see the local daemon (the docker-container driver cannot).
 	dep="$(m_depends "$id")"
 	if [ -n "$dep" ]; then
 		pull=()
+		builder="$(docker_driver_builder)"
 		if ! docker image inspect "$(local_tag "$dep" "$platform")" >/dev/null 2>&1; then
 			build_local "$dep" "$platform" || return 1
 		fi
 	fi
 
 	while IFS= read -r line; do args+=("$line"); done < <(resolve_buildargs "$id" "$platform" local)
-	while IFS= read -r line; do args+=("$line"); done < <(cache_args "$id" "$platform" write)
-	docker buildx build --platform "$platform" --load \
+	if [ -z "$dep" ]; then
+		while IFS= read -r line; do args+=("$line"); done < <(cache_args "$id" "$platform" write)
+	fi
+	with_qemu_retry docker buildx build --platform "$platform" --load \
+		${builder:+--builder "$builder"} \
 		--provenance=false \
 		${pull[@]+"${pull[@]}"} \
 		${args[@]+"${args[@]}"} \
@@ -223,7 +252,7 @@ publish_image() { # id
 		while IFS= read -r line; do args+=("$line"); done < <(cache_args "$id" "$plat")
 	done
 
-	docker buildx build --platform "$platforms" --push \
+	with_qemu_retry docker buildx build --platform "$platforms" --push \
 		--pull --provenance=false \
 		${args[@]+"${args[@]}"} "${tags[@]}" \
 		-f "$(m_dockerfile "$id")" "$(m_context "$id")"

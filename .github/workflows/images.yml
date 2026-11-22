@@ -10,6 +10,10 @@ on:
         description: "Publish the images that pass their tests"
         type: boolean
         default: true
+      images:
+        description: "Image ids to build and test, separated by spaces (empty = every image). See images.txt"
+        type: string
+        default: ""
   schedule:
     - cron: "0 3 1 * *"
   push:
@@ -88,23 +92,36 @@ jobs:
           PR_BASE: ${{ github.event.pull_request.base.sha }}
           PUSH_BEFORE: ${{ github.event.before }}
           SHA: ${{ github.sha }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          INPUT_IMAGES: ${{ inputs.images }}
         run: |
-          # Scheduled / manual runs: rebuild everything (base image security patches).
-          # PR / push: only the images that were touched.
+          # - Scheduled runs rebuild everything (base image security patches).
+          # - Manual runs build the images listed in the "images" input, or everything if it is empty.
+          # - Pushes and pull requests build only the images affected by the changed files.
+          base=""
           case "$EVENT" in
             pull_request) base="$PR_BASE" ;;
-            push)         base="$PUSH_BEFORE" ;;
-            *)            base="" ;;
+            push)
+              base="$PUSH_BEFORE"
+              # A new branch has no "before" commit: compare with the default branch instead.
+              if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ]; then
+                base="$(git merge-base "origin/$DEFAULT_BRANCH" "$SHA" 2>/dev/null || true)"
+              fi
+              ;;
           esac
-          if [ -n "$base" ] && git cat-file -e "$base^{commit}" 2>/dev/null; then
+
+          if [ "$EVENT" = "workflow_dispatch" ] && [ -n "${INPUT_IMAGES// /}" ]; then
+            matrix="$(scripts/matrix.sh --ids "$INPUT_IMAGES")"
+          elif [ -n "$base" ] && git cat-file -e "$base^{commit}" 2>/dev/null; then
             git diff --name-only "$base" "$SHA" > "$RUNNER_TEMP/changed.txt"
-            matrix="$(scripts/matrix.sh --changed "$RUNNER_TEMP/changed.txt")"
+            echo "Changed files:"; cat "$RUNNER_TEMP/changed.txt"
+            matrix="$(scripts/matrix.sh --changed "$RUNNER_TEMP/changed.txt" --base "$base")"
           else
             matrix="$(scripts/matrix.sh)"
           fi
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
           echo "count=$(echo "$matrix" | grep -o '"ids"' | wc -l | tr -d ' ')" >> "$GITHUB_OUTPUT"
-          echo "$matrix"
+          echo "Images to build: $(echo "$matrix" | grep -o '"name":"[^"]*"' | cut -d'"' -f4 | tr '\n' ' ')"
 
   image:
     name: ${{ matrix.name }}

@@ -50,8 +50,11 @@ GitHub Actions (`.github/workflows/images.yml`) runs the same script on every pu
 and, on `master`, on a monthly schedule or on manual dispatch (build + test + push). Images are pushed to GHCR only
 when all their tests pass, with a floating tag (`java_21`) and an immutable dated tag (`java_21-20261121`).
 Every image also has a size budget in `images.txt`; a test run fails when an image grows past it.
-Only images touched by a change are rebuilt on push and pull requests; the monthly run rebuilds everything to pick up
-base image security updates.
+Only the images affected by a change are rebuilt on push and pull requests: a change in `go/1.22/` rebuilds `go-1.22`
+only, a file shared by a family (`java/entrypoint.sh`) rebuilds that family, a test profile or end-to-end change rebuilds a
+sample of the images it covers, and a change to the test framework or the workflow rebuilds one image per profile.
+Documentation-only changes rebuild nothing. The monthly run rebuilds everything to pick up base image security updates,
+and a manual run can target specific images (`images` input, e.g. `java-21 go-1.22`, empty = everything).
 
 End-of-life runtimes (Node 12-17, Go 1.14-1.17, ...) are kept for compatibility and rebuilt on the latest available
 upstream tag, but they no longer receive upstream security fixes.

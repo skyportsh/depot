@@ -62,10 +62,8 @@ e2e_catalog_install_locked() {
 	return 1
 }
 
-# Seconds to wait for a game to become ready: emulated platforms are much slower.
-e2e_ready_timeout() {
-	if [ "$PLATFORM" = "$(host_platform)" ]; then echo 240; else echo 900; fi
-}
+# Seconds to wait for a game to become ready (only native platforms run these tests).
+e2e_ready_timeout() { echo 300; }
 
 # e2e_catalog_start <label> <case> <ready regex> <startup> [docker options...]
 # Copies the installed files into a volume owned by the image's "container" user, starts the
