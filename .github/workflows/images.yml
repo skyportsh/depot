@@ -110,7 +110,7 @@ jobs:
     name: ${{ matrix.name }}
     needs: plan
     if: needs.plan.outputs.count != '0'
-    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'self-hosted' }}
+    runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
       fail-fast: false
