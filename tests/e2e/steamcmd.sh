@@ -20,11 +20,15 @@ e2e_steamcmd() {
 		return 0
 	fi
 
-	if e2e_catalog_install steamcmd steamcmd.install.sh &&
-		[ -x "$dir/steamcmd/steamcmd.sh" ] && [ -f "$dir/steamcmd/linux32/steamcmd" ]; then
+	local reason=""
+	e2e_catalog_install steamcmd steamcmd.install.sh || reason="the install script failed"
+	[ -z "$reason" ] && { [ -x "$dir/steamcmd/steamcmd.sh" ] || reason="steamcmd.sh is missing or not executable"; }
+	[ -z "$reason" ] && { [ -f "$dir/steamcmd/linux32/steamcmd" ] || reason="linux32/steamcmd is missing"; }
+	if [ -z "$reason" ]; then
 		pass "e2e: the install steps download steamcmd (installers:debian)"
 	else
-		fail "e2e: the install steps download steamcmd (installers:debian)" "$(tail -20 "$E2E_CACHE/steamcmd.install.log" 2>/dev/null)"
+		fail "e2e: the install steps download steamcmd (installers:debian): $reason" \
+			"$(tail -30 "$E2E_CACHE/steamcmd.install.log" 2>/dev/null; echo "--- $dir:"; ls -la "$dir" "$dir/steamcmd" 2>&1)"
 		return 0
 	fi
 

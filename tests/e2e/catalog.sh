@@ -52,10 +52,14 @@ e2e_catalog_install_locked() {
 	installer="$(e2e_installer_image)" || return 1
 	rm -rf "$dir"
 	mkdir -p "$dir"
-	if docker run --rm --platform "$E2E_INSTALLER_PLATFORM" \
+	local rc
+	docker run --rm --platform "$E2E_INSTALLER_PLATFORM" \
 		-v "$dir:/mnt/server" \
 		-v "$ROOT/tests/e2e/$fixture:/install.sh:ro" \
-		"$@" --entrypoint bash "$installer" /install.sh >"$E2E_CACHE/$casename.install.log" 2>&1; then
+		"$@" --entrypoint bash "$installer" /install.sh >"$E2E_CACHE/$casename.install.log" 2>&1
+	rc=$?
+	printf '\n[e2e] install script exit code: %s\n' "$rc" >>"$E2E_CACHE/$casename.install.log"
+	if [ "$rc" -eq 0 ]; then
 		touch "$dir/.installed"
 		return 0
 	fi

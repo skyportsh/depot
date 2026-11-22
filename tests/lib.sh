@@ -23,7 +23,15 @@ fail() {
 	TESTS_FAILED=$((TESTS_FAILED + 1))
 	printf '    \033[31mFAIL\033[0m %s\n' "$1"
 	if [ -n "${2:-}" ]; then
-		printf '%s\n' "$2" | head -n 15 | sed 's/^/           | /'
+		# Long outputs: keep the first lines and, above all, the last ones (that is where errors are).
+		printf '%s\n' "$2" | tr '\r' '\n' | awk '
+			{ line[NR] = $0 }
+			END {
+				if (NR <= 30) { for (i = 1; i <= NR; i++) print line[i]; exit }
+				for (i = 1; i <= 8; i++) print line[i]
+				print "[... " (NR - 28) " lines omitted ...]"
+				for (i = NR - 19; i <= NR; i++) print line[i]
+			}' | sed 's/^/           | /'
 	fi
 }
 
