@@ -22,7 +22,9 @@ e2e_steamcmd() {
 
 	local reason=""
 	e2e_catalog_install steamcmd steamcmd.install.sh || reason="the install script failed"
-	[ -z "$reason" ] && { [ -x "$dir/steamcmd/steamcmd.sh" ] || reason="steamcmd.sh is missing or not executable"; }
+	# Not -x: the archive keeps its original owner (uid 5020) and mode (rwxrw-r--), so the file is not
+	# executable for the user running the tests. The image tests run it as the container user, after a chown.
+	[ -z "$reason" ] && { [ -f "$dir/steamcmd/steamcmd.sh" ] || reason="steamcmd.sh is missing"; }
 	[ -z "$reason" ] && { [ -f "$dir/steamcmd/linux32/steamcmd" ] || reason="linux32/steamcmd is missing"; }
 	if [ -z "$reason" ]; then
 		pass "e2e: the install steps download steamcmd (installers:debian)"
